@@ -4,6 +4,7 @@
 #
 # * install its ssh pubkey
 # * add it to sudoers
+# * add it to the `sudo` and `adm` groups
 #
 source "$(dirname $0)/../functions.sh"
 config "$(dirname $0)/../config.sh" || error "Cannot read config.sh: $1"
@@ -28,7 +29,7 @@ if [ "$USER" != "root" ]; then
                 --create-home \
                 --uid $(id --user $USER) \
                 --gid=$(id --group $USER) \
-                --groups sudo \
+                --groups sudo,adm \
                 --password "$(sudo grep $USER /etc/shadow | cut -d : -f 2)" \
                 $USER
         #
