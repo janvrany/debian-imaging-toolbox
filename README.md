@@ -92,6 +92,8 @@ The root image might be:
 
  * https://gist.github.com/ageis/f5595e59b1cddb1513d1b425a323db04
 
+ * https://docs.arbitrary.ch/security/systemd.html
+
 
 [1]: https://gitlab.mister-muffin.de/josch/mmdebstrap
 [2]: https://github.com/janvrany/riscv-debian
