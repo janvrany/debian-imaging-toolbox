@@ -17,4 +17,7 @@ ensure_ROOT $1
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
 	unattended-upgrades
-echo 'Unattended-Upgrade::Automatic-Reboot "true";' | sudo tee "$ROOT/etc/apt/apt.conf.d/51unattended-upgrades-local"
+echo 'Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Mail "root";
+Unattended-Upgrade::MailReport "on-change";
+' | sudo tee "$ROOT/etc/apt/apt.conf.d/51unattended-upgrades-local"
