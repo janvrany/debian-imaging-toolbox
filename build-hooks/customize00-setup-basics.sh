@@ -16,6 +16,7 @@ ensure_ROOT $1
 #
 : ${CONFIG_HOSTNAME:=debian}
 : ${CONFIG_DEFAULT_NET_IFACE:=eth0}
+: ${CONFIG_MACHINE_ID:=$(dbus-uuidgen)}
 
 #
 # Install base packages
@@ -57,6 +58,12 @@ fi
 
 chroot "${ROOT}" dpkg --configure -a
 
+#
+# Configure machine ID
+# See https://wiki.debian.org/MachineId
+#
+echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/etc/machine-id"
+echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/var/lib/dbus/machine-id"
 
 #
 # Configure hostname and /etc/hosts
