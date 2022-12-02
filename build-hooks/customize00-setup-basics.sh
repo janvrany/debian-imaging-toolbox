@@ -23,14 +23,14 @@ ensure_ROOT $1
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated update
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-    isc-dhcp-client adduser apt base-files base-passwd bash bsdutils \
-    coreutils dash \
+    isc-dhcp-client adduser base-files base-passwd bash bsdutils \
+    coreutils dash netbase \
     debianutils diffutils dpkg e2fsprogs findutils gpgv grep gzip \
     hostname init-system-helpers libbz2-1.0 libc-bin libc6 libgcc1 \
     libgmp10 liblz4-1 liblzma5 libstdc++6 login mawk \
     mount passwd perl-base sed tar \
-    tzdata util-linux zlib1g nano wget busybox net-tools ifupdown \
-    iputils-ping ntp dialog ca-certificates less \
+    tzdata util-linux zlib1g nano wget busybox net-tools \
+    iputils-ping ca-certificates less \
     apt-utils openssh-client \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
@@ -76,24 +76,45 @@ if [ "x$hostname_only" == "x$hostname_fqdn" ]; then
 else
     sudo sed -i -e "s/localhost/localhost $hostname_only $hostname_fqdn/g" "$ROOT/etc/hosts"
 fi
+
 #
 # Setup Debian security repo and update
 #
-release=$(lsb_release -s -c)
-if [ "$release" != "sid" ]; then
-	echo "deb http://security.debian.org/debian-security $release-security main contrib" | sudo tee -a "$ROOT/etc/apt/sources.list"
-	chroot "$ROOT" apt update
-	chroot "$ROOT" apt upgrade --allow-unauthenticated -y
+if grep debian "$ROOT/etc/apt/sources.list" > /dev/null; then
+    if [ "$DISTRIB_CODENAME" != "sid" ]; then
+        suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
+        codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
+        echo "deb http://security.debian.org/debian-security $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
+    fi
+elif grep ubuntu "$ROOT/etc/apt/sources.list" > /dev/null; then
+    suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
+    codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
+    echo "deb http://security.ubuntu.com/ubuntu $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
 fi
+chroot "$ROOT" apt update
+chroot "$ROOT" apt upgrade --allow-unauthenticated -y
 
 #
 # Configure eth0
 #
+if [ -d "$ROOT/etc/network/interfaces.d" ]; then
+    # Use "old" Debian-style config
 echo "
 # auto $CONFIG_DEFAULT_NET_IFACE
 allow-hotplug $CONFIG_DEFAULT_NET_IFACE
 iface $CONFIG_DEFAULT_NET_IFACE inet dhcp
 " | sudo tee "$ROOT/etc/network/interfaces.d/$CONFIG_DEFAULT_NET_IFACE"
+elif [ -d "$ROOT/etc/systemd/network" ]; then
+    # Use "modern" systemd-networkd config
+echo "
+[Match]
+Name=$CONFIG_DEFAULT_NET_IFACE
+
+[Network]
+DHCP=yes
+" | sudo tee "$ROOT/etc/systemd/network/$CONFIG_DEFAULT_NET_IFACE.network"
+    chroot "$ROOT" systemctl enable systemd-networkd.service
+fi
 
 # #
 # # Configure host0

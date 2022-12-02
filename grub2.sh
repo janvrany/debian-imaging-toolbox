@@ -26,8 +26,25 @@ tmp=$(realpath $(dirname $0))/tmp
 mkdir -p $tmp
 
 ensure_ROOT "$1"
+
+sudo mkdir -p "${ROOT}/run/systemd/resolve"
+sudo cp /etc/resolv.conf "${ROOT}/run/systemd/resolve/stub-resolv.conf"
+
+if [ -r "$ROOT/etc/lsb-release" ]; then
+    source "$ROOT/etc/lsb-release"
+else
+    DISTRIB_ID=$(sudo chroot "${ROOT}" lsb_release -s -i)
+fi
+
+if [ "$DISTRIB_ID" == "Ubuntu" ]; then
+	kernel_pkg=linux-image-generic
+else
+	kernel_pkg=linux-image-amd64
+fi
+
+
 sudo chroot "${ROOT}" apt-get --allow-unauthenticated -y install \
-						linux-image-amd64 grub-pc
+						"$kernel_pkg" grub-pc
 echo "
 // See https://stackoverflow.com/questions/61327011/correct-way-to-exit-init-in-linux-user-mode
 #include <unistd.h>
@@ -78,16 +95,34 @@ grub-install /dev/vda
 /tmp/off
 " | sudo tee "$ROOT/tmp/grub-self-install.sh"
 sudo chmod ugo+x "$ROOT/tmp/grub-self-install.sh"
+sudo rm -rf "${ROOT}/run/systemd"
+
+if [ -L "${ROOT}/vmlinuz" ]; then
+	vmlinuz_link=/vmlinuz
+elif [ -L "${ROOT}/boot/vmlinuz" ]; then
+	vmlinuz_link=/boot/vmlinuz
+else
+	vmlinuz_link=/vmlinuz
+fi
+
+if [ -L "${ROOT}/initrd.img" ]; then
+	initrd_link=/initrd.img
+elif [ -L "${ROOT}/boot/initrd.img" ]; then
+	initrd_link=/boot/initrd.img
+else
+	initrd_link=/initrd.img
+fi
+
 umount_ROOT
 
 sleep 1
 
 root_dev=$(part_ROOT $1)
-vmlinuz=$(guestfish -a "$1" -m $root_dev:/ readlink /vmlinuz)
-initrd=$(guestfish -a "$1" -m $root_dev:/ readlink /initrd.img)
+vmlinuz="$(guestfish -a "$1" -m $root_dev:/ readlink $vmlinuz_link)"
+initrd="$(guestfish -a "$1" -m $root_dev:/ readlink $initrd_link)"
 
-guestfish -a "$1" -m $root_dev:/ copy-out /$vmlinuz $tmp
-guestfish -a "$1" -m $root_dev:/ copy-out /$initrd $tmp
+guestfish -a "$1" -m $root_dev:/ copy-out $(dirname $vmlinuz_link)/$vmlinuz $tmp
+guestfish -a "$1" -m $root_dev:/ copy-out $(dirname $vmlinuz_link)/$initrd $tmp
 
 rm -f $tmp/vmlinuz $tmp/initrd.img
 mv $tmp/$(basename $vmlinuz) $tmp/vmlinuz

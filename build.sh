@@ -39,12 +39,13 @@ fi
 
 #
 # Setup global apt cache. Use (shared) host
-# cache if host arch is the same as $CONFIG_DEBIAN_ARCH.
+# cache if host release and arch matches
 #
-if dpkg-architecture --is $CONFIG_DEBIAN_ARCH; then
-    cache_apt=/var/cache/apt/archives
-else
-    cache_apt=$(realpath $(dirname $0))/tmp/apt/archives
+cache_apt=$(realpath $(dirname $0))/tmp/apt/archives
+if [ $(lsb_release -s -c) == $CONFIG_DEBIAN_RELEASE ]; then
+    if dpkg-architecture --is $CONFIG_DEBIAN_ARCH; then
+        cache_apt=/var/cache/apt/archives
+    fi
 fi
 mkdir -p $cache_apt
 
@@ -58,6 +59,7 @@ mmdebstrap \
     --setup="sync-in $cache_apt /var/cache/apt/archives/" \
     --setup="ls $(realpath $ROOT)/var/cache/apt/archives/" \
     --hook-directory=$(realpath $(dirname $0)/build-hooks) \
+    --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"
 
