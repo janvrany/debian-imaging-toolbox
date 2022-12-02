@@ -29,8 +29,8 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     hostname init-system-helpers libbz2-1.0 libc-bin libc6 libgcc1 \
     libgmp10 liblz4-1 liblzma5 libstdc++6 login mawk \
     mount passwd perl-base sed tar \
-    tzdata util-linux zlib1g nano wget busybox net-tools ifupdown \
     iputils-ping ntp dialog ca-certificates less \
+    tzdata util-linux zlib1g nano wget busybox net-tools \
     apt-utils openssh-client \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
@@ -89,11 +89,24 @@ fi
 #
 # Configure eth0
 #
+if [ -d "$ROOT/etc/network/interfaces.d" ]; then
+    # Use "old" Debian-style config
 echo "
 # auto $CONFIG_DEFAULT_NET_IFACE
 allow-hotplug $CONFIG_DEFAULT_NET_IFACE
 iface $CONFIG_DEFAULT_NET_IFACE inet dhcp
 " | sudo tee "$ROOT/etc/network/interfaces.d/$CONFIG_DEFAULT_NET_IFACE"
+elif [ -d "$ROOT/etc/systemd/network" ]; then
+    # Use "modern" systemd-networkd config
+echo "
+[Match]
+Name=$CONFIG_DEFAULT_NET_IFACE
+
+[Network]
+DHCP=yes
+" | sudo tee "$ROOT/etc/systemd/network/$CONFIG_DEFAULT_NET_IFACE.network"
+    chroot "$ROOT" systemctl enable systemd-networkd.service
+fi
 
 # #
 # # Configure host0
