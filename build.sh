@@ -58,6 +58,7 @@ mmdebstrap \
     --setup="sync-in $cache_apt /var/cache/apt/archives/" \
     --setup="ls $(realpath $ROOT)/var/cache/apt/archives/" \
     --hook-directory=$(realpath $(dirname $0)/build-hooks) \
+    --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"
 
