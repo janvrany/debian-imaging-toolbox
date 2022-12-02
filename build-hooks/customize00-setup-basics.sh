@@ -24,7 +24,7 @@ ensure_ROOT $1
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated update
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     isc-dhcp-client adduser base-files base-passwd bash bsdutils \
-    coreutils dash \
+    coreutils dash netbase \
     debianutils diffutils dpkg e2fsprogs findutils gpgv grep gzip \
     hostname init-system-helpers libbz2-1.0 libc-bin libc6 libgcc1 \
     libgmp10 liblz4-1 liblzma5 libstdc++6 login mawk \
