@@ -29,8 +29,8 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     hostname init-system-helpers libbz2-1.0 libc-bin libc6 libgcc1 \
     libgmp10 liblz4-1 liblzma5 libstdc++6 login mawk \
     mount passwd perl-base sed tar \
-    iputils-ping ntp dialog ca-certificates less \
     tzdata util-linux zlib1g nano wget busybox net-tools \
+    iputils-ping ca-certificates less \
     apt-utils openssh-client \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
