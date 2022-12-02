@@ -76,15 +76,23 @@ if [ "x$hostname_only" == "x$hostname_fqdn" ]; then
 else
     sudo sed -i -e "s/localhost/localhost $hostname_only $hostname_fqdn/g" "$ROOT/etc/hosts"
 fi
+
 #
 # Setup Debian security repo and update
 #
-release=$(lsb_release -s -c)
-if [ "$release" != "sid" ]; then
-	echo "deb http://security.debian.org/debian-security $release-security main contrib" | sudo tee -a "$ROOT/etc/apt/sources.list"
-	chroot "$ROOT" apt update
-	chroot "$ROOT" apt upgrade --allow-unauthenticated -y
+if grep debian "$ROOT/etc/apt/sources.list" > /dev/null; then
+    if [ "$DISTRIB_CODENAME" != "sid" ]; then
+        suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
+        codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
+        echo "deb http://security.debian.org/debian-security $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
+    fi
+elif grep ubuntu "$ROOT/etc/apt/sources.list" > /dev/null; then
+    suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
+    codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
+    echo "deb http://security.ubuntu.com/ubuntu $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
 fi
+chroot "$ROOT" apt update
+chroot "$ROOT" apt upgrade --allow-unauthenticated -y
 
 #
 # Configure eth0
