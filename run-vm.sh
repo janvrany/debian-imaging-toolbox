@@ -34,7 +34,7 @@ fi
 # Check the VM architecture:
 #
 typeset part=$(part_ROOT $1)
-typeset arch=$(guestfish -a root.img run : mount $part / : file-architecture /bin/mount)
+typeset arch=$(guestfish -a $1 run : mount $part / : file-architecture /bin/mount)
 typeset qemu=qemu-system-$arch
 typeset qemu_opts=
 
