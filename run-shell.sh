@@ -2,7 +2,7 @@
 #
 # Run interactive shell "in the image" using systemd-nspawn
 #
-source "$(dirname $0)/functions.sh"
+source "$(dirname $(realpath ${BASH_SOURCE[0]}))/functions.sh"
 config "$(dirname $0)/config.sh" || error "Cannot read config.sh: $1"
 config "$(dirname $0)/config-local.sh"
 

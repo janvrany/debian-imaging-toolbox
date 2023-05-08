@@ -2,7 +2,7 @@
 #
 # Bootstrap the debian
 #
-source "$(dirname $0)/functions.sh"
+source "$(dirname $(realpath ${BASH_SOURCE[0]}))/functions.sh"
 config "$(dirname $0)/config.sh"
 config "$(dirname $0)/config-local.sh"
 
@@ -11,7 +11,9 @@ config "$(dirname $0)/config-local.sh"
 #
 : ${CONFIG_DEBIAN_ARCH:=amd64}
 : ${CONFIG_DEBIAN_RELEASE:=bullseye}
-: ${CONFIG_DEBIAN_SOURCES="deb http://deb.debian.org/debian $CONFIG_DEBIAN_RELEASE main contrib"}
+: ${CONFIG_DEBIAN_SOURCES:="deb http://deb.debian.org/debian $CONFIG_DEBIAN_RELEASE main contrib"}
+: ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/tmp"}
+: ${CONFIG_BUILD_HOOK_DIR:="$(dirname $0)/build-hooks"}
 
 if [ -z "$1" ]; then
     echo "usage: $(basename $0) <ROOT>"
@@ -41,7 +43,7 @@ fi
 # Setup global apt cache. Use (shared) host
 # cache if host release and arch matches
 #
-cache_apt=$(realpath $(dirname $0))/tmp/apt/archives
+cache_apt="${CONFIG_BUILD_TMP_DIR}/apt/archives"
 if [ $(lsb_release -s -c) == $CONFIG_DEBIAN_RELEASE ]; then
     if dpkg-architecture --is $CONFIG_DEBIAN_ARCH; then
         cache_apt=/var/cache/apt/archives
@@ -58,7 +60,7 @@ mmdebstrap \
     --setup="mkdir -p $(realpath $ROOT)/var/cache/apt/archives/" \
     --setup="sync-in $cache_apt /var/cache/apt/archives/" \
     --setup="ls $(realpath $ROOT)/var/cache/apt/archives/" \
-    --hook-directory=$(realpath $(dirname $0)/build-hooks) \
+    --hook-directory="${CONFIG_BUILD_HOOK_DIR}" \
     --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"

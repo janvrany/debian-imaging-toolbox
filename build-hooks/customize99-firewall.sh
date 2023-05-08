@@ -4,7 +4,7 @@
 # This should run last because it tries to guess
 # which services to allow (currently only probes ssh and http(s))
 #
-source "$(dirname $0)/../functions.sh"
+source "$(dirname $(realpath ${BASH_SOURCE[0]}))/../functions.sh"
 config "$(dirname $0)/../config.sh" || error "Cannot read config.sh: $1"
 config "$(dirname $0)/../config-local.sh"
 ensure_ROOT $1
