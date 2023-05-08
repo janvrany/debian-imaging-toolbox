@@ -31,6 +31,7 @@ for key_id in B523E5F3FC4E5F2C 8D69674688B6CB36; do
              --export $key_id | sudo tee -a "$ROOT/etc/apt/trusted.gpg.d/debian-$key_id.gpg"
 done
 
+#
 # Install base packages
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated update
@@ -110,7 +111,7 @@ chroot "${ROOT}" ln -s "/usr/share/zoneinfo/$CONFIG_TIMEZONE" "/etc/localtime"
 # Setup Debian security repo and update
 #
 if grep debian "$ROOT/etc/apt/sources.list" > /dev/null; then
-    if [ "$DISTRIB_CODENAME" != "sid" ]; then
+    if [ "$CONFIG_DEBIAN_RELEASE" != "sid" ]; then
         suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
         codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
         echo "deb http://security.debian.org/debian-security $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
