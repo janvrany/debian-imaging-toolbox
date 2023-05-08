@@ -13,8 +13,9 @@ function error () {
 # Load config from given file if it exists.
 #
 function config() {
-    if test -f $1; then
-        source $1
+    local config_file=$(realpath -s $1)
+    if test -f $config_file; then
+        source $config_file
         return 0
     else
         return 0
