@@ -17,6 +17,7 @@ ensure_ROOT $1
 : ${CONFIG_HOSTNAME:=debian}
 : ${CONFIG_DEFAULT_NET_IFACE:=eth0}
 : ${CONFIG_MACHINE_ID:=$(dbus-uuidgen)}
+: ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}
 
 #
 # Install base packages
@@ -37,6 +38,10 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     lsb-release dbus man
     # libgnutls30 \
 
+#
+# Install systemd
+#
+
 # When installing systemd, we have to umount /proc in
 # chroot. This is because setting ACLs on guestmount-mounted
 # filesystem does not work - despite using acl,user_xattr ext4
@@ -55,8 +60,14 @@ else
     chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
         systemd systemd-sysv
 fi
-
 chroot "${ROOT}" dpkg --configure -a
+
+#
+# Install systemd-timesyncd
+#
+chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
+    systemd-timesyncd
+
 
 #
 # Configure machine ID
@@ -76,6 +87,13 @@ if [ "x$hostname_only" == "x$hostname_fqdn" ]; then
 else
     sudo sed -i -e "s/localhost/localhost $hostname_only $hostname_fqdn/g" "$ROOT/etc/hosts"
 fi
+
+#
+# Configure timezone
+#
+echo "$CONFIG_TIMEZONE" | sudo tee "$ROOT/etc/timezone"
+rm -f "${ROOT}/etc/localtime"
+chroot "${ROOT}" ln -s "/usr/share/zoneinfo/$CONFIG_TIMEZONE" "/etc/localtime"
 
 #
 # Setup Debian security repo and update
