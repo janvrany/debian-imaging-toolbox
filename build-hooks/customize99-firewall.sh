@@ -19,6 +19,28 @@ ensure_ROOT $1
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
 	firewalld
+
+#
+# Install & configure fail2ban
+#
+chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
+	fail2ban
+
+echo "
+[DEFAULT]
+
+default_backend = systemd
+
+banaction = firewallcmd-ipset
+
+mta = mail
+action = %(action_mwl)s
+
+bantime  = 1d
+findtime = 1h
+maxretry = 5
+" | sudo tee "$ROOT/etc/fail2ban/jail.local"
+
 #
 # Try to auto-detect services and enable them
 #
@@ -33,9 +55,22 @@ if [ -f "$ROOT/etc/ssh/sshd_config" ]; then
 		chroot "${ROOT}" firewall-offline-cmd --service=ssh --remove-port=22/tcp
 	fi
 	chroot "${ROOT}" firewall-offline-cmd --zone=public --add-service=ssh
+	echo "
+[sshd]
+port = $CONFIG_SSHD_PORT
+" | sudo tee "$ROOT/etc/fail2ban/jail.d/sshd.local"
+
 fi
 
 if [ -d "$ROOT/etc/nginx" ]; then
 	chroot "${ROOT}" firewall-offline-cmd --zone=public --add-service=http
 	chroot "${ROOT}" firewall-offline-cmd --zone=public --add-service=https
+	echo "
+[nginx-http-auth]
+enabled = true
+
+[nginx-botsearch]
+enabled = true
+
+" | sudo tee "$ROOT/etc/fail2ban/jail.d/nginx.local"
 fi
