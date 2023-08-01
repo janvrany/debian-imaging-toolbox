@@ -10,11 +10,20 @@ ensure_ROOT $1
 #
 # Config variables
 #
-# None
+: ${CONFIG_CRONWRAP_INSTALL_DIR:=/opt/cronwrap}
+
+# build-essential is needed to build Mercurial's native code
+chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
+	python3 python3-dev python3-pip build-essential virtualenv
 
 #
-# Install cronwrap
+# Create virtualenv for Mercurial to make it self-contained
 #
-chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-	python3 python3-pip
-chroot "${ROOT}" pip install https://github.com/janvrany/cronwrap/archive/refs/heads/master.zip
+chroot "${ROOT}" /usr/bin/virtualenv "${CONFIG_CRONWRAP_INSTALL_DIR}"
+
+#
+# Install Mercurial
+#
+chroot "${ROOT}" "${CONFIG_CRONWRAP_INSTALL_DIR}/bin/pip" install \
+	https://github.com/janvrany/cronwrap/archive/refs/heads/master.zip
+(cd "${ROOT}/usr/local/bin" && ln -s "../../../${CONFIG_CRONWRAP_INSTALL_DIR}/bin/cronwrap" .)
