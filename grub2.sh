@@ -9,7 +9,7 @@ config "$(dirname $0)/config-local.sh"
 #
 # Config variables
 #
-# None
+: ${CONFIG_GRUB_CMDLINE_LINUX_CUSTOM:=}
 
 #
 # Install Linux kernel and GRUB2
@@ -84,6 +84,15 @@ echo '
 #
 GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX net.ifnames=0"
 ' | sudo tee "$ROOT/etc/default/grub.d/ifnames.cfg"
+
+if [ ! -z "$CONFIG_GRUB_CMDLINE_LINUX_CUSTOM" ]; then
+echo "
+#
+# Custom linux cmdline options
+#
+GRUB_CMDLINE_LINUX=\"\$GRUB_CMDLINE_LINUX $CONFIG_GRUB_CMDLINE_LINUX_CUSTOM\"
+" | sudo tee "$ROOT/etc/default/grub.d/custom.cfg"
+fi
 
 echo "#!/bin/bash
 set -x
