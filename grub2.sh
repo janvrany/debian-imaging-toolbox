@@ -27,9 +27,6 @@ mkdir -p $tmp
 
 ensure_ROOT "$1"
 
-sudo mkdir -p "${ROOT}/run/systemd/resolve"
-sudo cp /etc/resolv.conf "${ROOT}/run/systemd/resolve/stub-resolv.conf"
-
 if [ -r "$ROOT/etc/lsb-release" ]; then
     source "$ROOT/etc/lsb-release"
 else

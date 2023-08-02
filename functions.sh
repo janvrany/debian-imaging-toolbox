@@ -185,6 +185,9 @@ function mount_ROOT() {
                     exit 1
             esac
         fi
+        if [ -d "${ROOT}/etc" ]; then
+            sudo mount -o bind,ro "/etc/resolv.conf" "${ROOT}/etc/resolv.conf"
+        fi
         trap umount_ROOT EXIT
     fi
 }
@@ -192,6 +195,9 @@ function mount_ROOT() {
 function umount_ROOT() {
     if [ -d "${ROOT}/proc/self" ]; then
         sudo umount "${ROOT}/proc"
+    fi
+    if findmnt -n "${ROOT}/etc/resolv.conf"; then
+        sudo umount "${ROOT}/etc/resolv.conf"
     fi
     if grep "${ROOT}" /etc/mtab > /dev/null; then
         echo "I: umounting '${ROOT}'"

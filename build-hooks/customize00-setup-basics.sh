@@ -66,20 +66,41 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
 if findmnt "${ROOT}"; then
     chroot "${ROOT}" umount /proc
     chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-        systemd systemd-sysv
+        systemd systemd-sysv libnss-resolve
     chroot "${ROOT}" mount -t proc proc /proc
 else
     chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-        systemd systemd-sysv
+        systemd systemd-sysv libnss-resolve
 fi
 chroot "${ROOT}" dpkg --configure -a
+
+#
+# Configure systemd-resolved.
+#
+sudo mkdir "$ROOT/etc/systemd/resolved.conf.d"
+echo "
+[Resolve]
+# Quad9:      9.9.9.9 2620:fe::fe
+# Cloudflare: 1.1.1.1 1.0.0.1 2606:4700:4700::1111 2606:4700:4700::1001
+# Google:     8.8.8.8 8.8.4.4 2001:4860:4860::8888 2001:4860:4860::8844
+FallbackDNS=9.9.9.9 2620:fe::fe 1.1.1.1 2606:4700:4700::1111
+" | sudo tee "$ROOT/etc/systemd/resolved.conf.d/fallback.conf"
+# Make /etc/resolv.conf a link to systemd-resolved managed file. On newer Debian versions
+# (newer than Bullseye) this is done automagically as part of package installation.
+# On older systems, it has (?) to be done manually. Hence the check.
+if test ! -L "$ROOT/etc/resolv.conf"; then
+    (cd "$ROOT/etc" && sudo rm -f resolv.conf && sudo ln -s ../run/systemd/resolve/resolv.conf)
+fi
+# Now, we have to mount real resolv.conf over (symlinked, systemd-resolved-managed resolv.conf)
+# in currently being built chROOT to make sure name resolution is still working (since symlinked
+# file does not exist yet or does not contain sensible information).
+sudo mount -o bind "/etc/resolv.conf" "$ROOT/etc/resolv.conf"
 
 #
 # Install systemd-timesyncd
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     systemd-timesyncd
-
 
 #
 # Configure machine ID

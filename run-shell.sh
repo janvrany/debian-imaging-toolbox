@@ -42,11 +42,13 @@ if [ -z "$1" ]; then
     # Run interactive shell
     sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
                         $image \
+                        --bind-ro /etc/resolv.conf:/etc/resolv.conf \
                         $bind_user
 else
     # Run command inside the container
     sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
                         $image \
                         $bind_user \
+                        --bind-ro /etc/resolv.conf:/etc/resolv.conf \
                         -a "$@"
 fi

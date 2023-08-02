@@ -61,6 +61,7 @@ mmdebstrap \
     --setup="sync-in $cache_apt /var/cache/apt/archives/" \
     --setup="ls $(realpath $ROOT)/var/cache/apt/archives/" \
     --hook-directory="${CONFIG_BUILD_HOOK_DIR}" \
+    --customize-hook='if findmnt -n $1/etc/resolv.conf; then sudo umount $1/etc/resolv.conf; fi' \
     --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"
