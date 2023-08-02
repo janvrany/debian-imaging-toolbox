@@ -40,18 +40,50 @@ if [ "$USER" != "root" ]; then
         chroot "${ROOT}" /usr/bin/chsh -s /bin/bash $USER
 
         HOME_IN_ROOT="$ROOT/$(grep $USER "${ROOT}/etc/passwd" | cut -d : -f 6)"
+        #
+        # Copy contents of /etc/skel (which is not copied for some
+        # reason)
+        #
+        cp -r $ROOT/etc/skel/.* "$HOME_IN_ROOT"
+
+        #
+        # Automatically start tmux when logging in over SSH
+        #
+        cat >> "$HOME_IN_ROOT/.profile" <<EOF
+
+# Attach / run 'tmux' if we're connecting
+# via SSH and 'tmux' is installed.
+if [ ! -z "\$SSH_CLIENT" -a -z "\$TMUX" ]; then
+    if which tmux; then
+        exec tmux new-session -A -s main
+    fi
+fi
+EOF
+
+        #
+        # Allow $USER to sudo as any user
+        #
         cat >${ROOT}/etc/sudoers.d/$USER <<EOF
 ${USER}     ALL=(ALL:ALL) ALL
 EOF
+        #
         # Install SSH keys
+        #
         for pubkey in id_rsa.pub id_dsa.pub; do
                 if [ -r "$HOME/.ssh/$pubkey" ]; then
                         mkdir -p "$HOME_IN_ROOT/.ssh"
                         cat "$HOME/.ssh/$pubkey" >> "$HOME_IN_ROOT/.ssh/authorized_keys"
                         chmod -R go-rwx "$HOME_IN_ROOT/.ssh"
-                        chown -R $(id --user $USER) "$HOME_IN_ROOT/.ssh"
                 fi
         done
+        #
         # Disable root login
+        #
         chroot "$ROOT" passwd --lock root
+
+        #
+        # Finally, make sure all files are owned by
+        # $USER
+        #
+        chown -R $(id --user $USER):$(id --group $USER) "$HOME_IN_ROOT"
 fi
