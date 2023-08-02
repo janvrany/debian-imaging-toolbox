@@ -163,7 +163,7 @@ Name=$CONFIG_DEFAULT_NET_IFACE
 
 [Network]
 DHCP=yes
-" | sudo tee "$ROOT/etc/systemd/network/$CONFIG_DEFAULT_NET_IFACE.network"
+" | sudo tee "$ROOT/etc/systemd/network/99-$CONFIG_DEFAULT_NET_IFACE.network"
     chroot "$ROOT" systemctl enable systemd-networkd.service
 fi
 
