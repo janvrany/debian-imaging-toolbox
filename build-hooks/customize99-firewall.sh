@@ -65,12 +65,4 @@ fi
 if [ -d "$ROOT/etc/nginx" ]; then
 	chroot "${ROOT}" firewall-offline-cmd --zone=public --add-service=http
 	chroot "${ROOT}" firewall-offline-cmd --zone=public --add-service=https
-	echo "
-[nginx-http-auth]
-enabled = true
-
-[nginx-botsearch]
-enabled = true
-
-" | sudo tee "$ROOT/etc/fail2ban/jail.d/nginx.local"
 fi
