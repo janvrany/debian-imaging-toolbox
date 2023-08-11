@@ -18,13 +18,13 @@ ensure_ROOT $1
 # Install firewalld
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-	firewalld
+	firewalld nftables ipset
 
 #
 # Install & configure fail2ban
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-	fail2ban
+	fail2ban python3-systemd
 
 echo "
 [DEFAULT]
@@ -33,12 +33,12 @@ default_backend = systemd
 
 banaction = firewallcmd-ipset
 
-mta = mail
-action = %(action_mwl)s
+# mta = mail
+# action = %(action_mwl)s
 
 bantime  = 1d
 findtime = 1h
-maxretry = 5
+maxretry = 3
 " | sudo tee "$ROOT/etc/fail2ban/jail.local"
 
 #
