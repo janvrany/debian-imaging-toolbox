@@ -18,7 +18,7 @@ ensure_ROOT $1
 # Install firewalld
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-	firewalld nftables ipset
+	firewalld nftables iptables ipset
 
 #
 # Install & configure fail2ban
