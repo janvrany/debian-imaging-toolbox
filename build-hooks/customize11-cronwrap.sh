@@ -14,7 +14,7 @@ ensure_ROOT $1
 
 # build-essential is needed to build Mercurial's native code
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-	python3 python3-dev python3-pip build-essential virtualenv
+	python3 python3-dev python3-pip build-essential virtualenv bsd-mailx
 
 #
 # Create virtualenv for Mercurial to make it self-contained
