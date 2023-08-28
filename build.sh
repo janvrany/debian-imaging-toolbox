@@ -62,15 +62,9 @@ mmdebstrap \
     --setup="ls $(realpath $ROOT)/var/cache/apt/archives/" \
     --hook-directory="${CONFIG_BUILD_HOOK_DIR}" \
     --customize-hook='if findmnt -n $1/etc/resolv.conf; then sudo umount $1/etc/resolv.conf; fi' \
+    --customize-hook="ls $1/var/cache/apt/archives" \
+    --customize-hook="sync-out /var/cache/apt/archives/ $cache_apt" \
+    --customize-hook="apt clean" \
     --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"
-
-# Archive and cleanup downloaded packages
-ls    $(realpath $ROOT)/var/cache/apt/archives/*.deb
-if [ "$cache_apt" == "/var/cache/apt/archives" ]; then
-    sudo cp -u $(realpath $ROOT)/var/cache/apt/archives/*.deb $cache_apt
-else
-    cp -u $(realpath $ROOT)/var/cache/apt/archives/*.deb $cache_apt
-fi
-sudo rm -f $(realpath $ROOT)/var/cache/apt/archives/*.deb
