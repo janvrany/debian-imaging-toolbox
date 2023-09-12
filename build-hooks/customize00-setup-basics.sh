@@ -42,7 +42,7 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     libgmp10 liblz4-1 liblzma5 libstdc++6 login mawk \
     mount passwd perl-base sed tar \
     tzdata util-linux zlib1g nano wget busybox net-tools \
-    iputils-ping ca-certificates less \
+    iproute2 iputils-ping ca-certificates less \
     apt-utils openssh-client \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
