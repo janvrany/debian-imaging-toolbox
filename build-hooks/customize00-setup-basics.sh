@@ -35,7 +35,7 @@ done
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated update
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-    isc-dhcp-client adduser base-files base-passwd bash bsdutils \
+    adduser base-files base-passwd bash bsdutils \
     coreutils dash netbase \
     debianutils diffutils dpkg e2fsprogs findutils gpgv grep gzip \
     hostname init-system-helpers libbz2-1.0 libc-bin libc6 libgcc1 \
