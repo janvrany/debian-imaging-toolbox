@@ -16,7 +16,6 @@ ensure_ROOT $1
 #
 : ${CONFIG_HOSTNAME:=debian}
 : ${CONFIG_DEFAULT_NET_IFACE:=eth0}
-: ${CONFIG_MACHINE_ID:=$(dbus-uuidgen)}
 : ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}
 
 #
@@ -104,11 +103,13 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     systemd-timesyncd
 
 #
-# Configure machine ID
+# Configure machine ID. Note, that for some reason, contents of this
+# file does not survive mmdebstrap, so if CONFIG_MACHINE_ID set, we
+# initialize $ROOT/etc/machine-id in `build.sh`.
+#
 # See https://wiki.debian.org/MachineId
 #
-echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/etc/machine-id"
-echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/var/lib/dbus/machine-id"
+touch    "$ROOT/etc/machine-id"
 
 #
 # Configure hostname and /etc/hosts

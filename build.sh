@@ -12,6 +12,7 @@ config "$(dirname $0)/config-local.sh"
 : ${CONFIG_DEBIAN_ARCH:=amd64}
 : ${CONFIG_DEBIAN_RELEASE:=bullseye}
 : ${CONFIG_DEBIAN_SOURCES:="deb http://deb.debian.org/debian $CONFIG_DEBIAN_RELEASE main contrib"}
+: ${CONFIG_MACHINE_ID:=}
 : ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/tmp"}
 : ${CONFIG_BUILD_HOOK_DIR:="$(dirname $0)/build-hooks"}
 
@@ -68,3 +69,12 @@ mmdebstrap \
     --include=apt \
     $CONFIG_DEBIAN_RELEASE "$ROOT" \
     "$CONFIG_DEBIAN_SOURCES"
+
+# For some reason, contents of "$ROOT/etc/machine-id" nor file
+# "/var/lib/dbus/machine-id" do not survive mmdebstrap, so if
+# CONFIG_MACHINE_ID set, we initialize it here. Sigh.
+if [ ! -z "$CONFIG_MACHINE_ID" ]; then
+    echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/etc/machine-id"
+    rm -f    "$ROOT/var/lib/dbus/machine-id"
+    ln -r -s "$ROOT/etc/machine-id" "$ROOT/var/lib/dbus/machine-id"
+fi
