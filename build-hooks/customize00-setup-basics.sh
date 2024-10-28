@@ -22,13 +22,13 @@ ensure_ROOT $1
 #
 # Install package signing keys for Debian ports
 #
-for key_id in B523E5F3FC4E5F2C 8D69674688B6CB36; do
-    sudo mkdir -p "$ROOT/root/.gnupg"
-    sudo gpg --no-default-keyring --primary-keyring "$ROOT/root/.gnupg/pubring.kbx" \
-             --keyserver keyserver.ubuntu.com --recv-key $key_id
-    sudo gpg --no-default-keyring --primary-keyring "$ROOT/root/.gnupg/pubring.kbx" \
-             --export $key_id | sudo tee -a "$ROOT/etc/apt/trusted.gpg.d/debian-$key_id.gpg"
-done
+# for key_id in B523E5F3FC4E5F2C 8D69674688B6CB36; do
+#     sudo mkdir -p "$ROOT/root/.gnupg"
+#     sudo gpg --no-default-keyring --primary-keyring "$ROOT/root/.gnupg/pubring.kbx" \
+#              --keyserver keyserver.ubuntu.com --recv-key $key_id
+#     sudo gpg --no-default-keyring --primary-keyring "$ROOT/root/.gnupg/pubring.kbx" \
+#              --export $key_id | sudo tee -a "$ROOT/etc/apt/trusted.gpg.d/debian-$key_id.gpg"
+# done
 
 #
 # Install base packages
