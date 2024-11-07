@@ -99,7 +99,7 @@ sudo mount -o bind "/etc/resolv.conf" "$ROOT/etc/resolv.conf"
 # Install systemd-timesyncd
 #
 chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
-    systemd-timesyncd
+    systemd-timesyncd || true
 
 #
 # Configure machine ID. Note, that for some reason, contents of this
@@ -133,7 +133,10 @@ chroot "${ROOT}" ln -s "/usr/share/zoneinfo/$CONFIG_TIMEZONE" "/etc/localtime"
 # Setup Debian security repo and update
 #
 if grep debian "$ROOT/etc/apt/sources.list" > /dev/null; then
-    if [ "$CONFIG_DEBIAN_RELEASE" != "sid" ]; then
+    if [ "$CONFIG_DEBIAN_RELEASE" == "buster" ]; then
+        suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
+        echo "deb http://security.debian.org/debian-security buster/updates $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
+    elif [ "$CONFIG_DEBIAN_RELEASE" != "sid" ]; then
         suites=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 4,5,6,7,8)
         codename=$(grep '^deb' "$ROOT/etc/apt/sources.list" | tail -n 1 | cut -d ' ' -f 3)
         echo "deb http://security.debian.org/debian-security $codename-security $suites" | sudo tee -a "$ROOT/etc/apt/sources.list"
