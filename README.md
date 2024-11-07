@@ -95,26 +95,8 @@ for Debian. To boostrap Ubuntu image, use following configuration (in `config.sh
 Bootstraping recent Ubuntu (that is, newer than 20.04) requires additional trick
 since Debian's `dpkg` does not suport zstd compression (and will not anytime soon).
 
-To workaround this limitation, the trick is to start building with older version (20.04 Focal Fossa) and then upgrade to Jammy as soon as possible. To do so, just create hook
-`build-hooks/customize00-0upgrade-to-jammy.sh` with following contents:
-
-    #!/bin/bash
-    source "$(dirname $0)/../functions.sh"
-    config "$(dirname $0)/../config.sh" || error "Cannot read config.sh: $1"
-    config "$(dirname $0)/../config-local.sh"
-    ensure_ROOT $1
-
-    #
-    # Config variables
-    #
-    # None
-
-    sudo sed -i -e 's/focal/jammy/g' "${ROOT}/etc/apt/sources.list"
-
-    chroot "${ROOT}" /usr/bin/apt update
-    chroot "${ROOT}" /usr/bin/apt-get -y upgrade
-    chroot "${ROOT}" /usr/bin/apt -y upgrade
-    chroot "${ROOT}" /usr/bin/apt -y autoremove
+To workaround this limitation, the trick is to start building with older version (20.04 Focal Fossa) and then upgrade to Jammy as soon as possible. This is done automagically
+if `CONFIG_DEBIAN_RELEASE` is set to Jammy (or newer, though this has not been tested yet).
 
 
 ## Useful links
