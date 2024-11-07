@@ -10,6 +10,7 @@ config "$(dirname $0)/config-local.sh"
 # Config variables
 #
 : ${CONFIG_VM_MEM:=512M}
+: ${CONFIG_VM_CPU:=1}
 : ${CONFIG_SSHD_PORT:=22}
 #
 # Boot the system
@@ -46,6 +47,10 @@ case "$arch" in
 	* )
 		error "Architecture not yet supported: $arch"
 esac
+
+if [ ! -z "@CONFIG_VM_CPU" ]; then
+	qemu_opts="$qemu_opts -smp cpus=$CONFIG_VM_CPU"
+fi
 
 $qemu $qemu_opts \
     -m "$CONFIG_VM_MEM" \
