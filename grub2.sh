@@ -123,6 +123,7 @@ umount_ROOT
 
 sleep 1
 
+root_img_fmt=$(qemu-img info $1 | grep 'file format' | cut -d ' '  -f 3)
 root_dev=$(part_ROOT $1)
 vmlinuz="$(guestfish -a "$1" -m $root_dev:/ readlink $vmlinuz_link)"
 initrd="$(guestfish -a "$1" -m $root_dev:/ readlink $initrd_link)"
@@ -138,5 +139,5 @@ qemu-system-x86_64 \
     -M q35 -m "512M" \
 	-kernel "$tmp/vmlinuz" -initrd "$tmp/initrd.img" -append "root=/dev/vda1 rw console=ttyS0 init=/tmp/grub-self-install.sh" \
 	-nographic \
-	-drive if=none,id=drive0,cache=none,aio=native,file=$1 -device virtio-blk-pci,drive=drive0,scsi=off \
+	-drive if=none,id=drive0,cache=none,aio=native,file=$1,format=$root_img_fmt -device virtio-blk-pci,drive=drive0 \
 	-netdev user,id=hostnet0 -device virtio-net-pci,netdev=hostnet0

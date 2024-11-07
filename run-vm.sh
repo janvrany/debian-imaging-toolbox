@@ -37,6 +37,7 @@ typeset part=$(part_ROOT $1)
 typeset arch=$(guestfish -a $1 run : mount $part / : file-architecture /bin/mount)
 typeset qemu=qemu-system-$arch
 typeset qemu_opts=
+typeset qemu_img_fmt=$(qemu-img info $1 | grep 'file format' | cut -d ' '  -f 3)
 
 case "$arch" in
 	x86_64 )
@@ -48,5 +49,5 @@ esac
 
 $qemu $qemu_opts \
     -m "$CONFIG_VM_MEM" \
-	-drive if=none,id=drive0,cache=none,aio=native,file=$1 -device virtio-blk-pci,drive=drive0,scsi=off \
+	-drive if=none,id=drive0,cache=none,aio=native,file=$1,format=$qemu_img_fmt -device virtio-blk-pci,drive=drive0 \
 	-netdev user,id=hostnet0,hostfwd=tcp::5522-:${CONFIG_SSHD_PORT},hostfwd=tcp::5580-:80 -device virtio-net-pci,netdev=hostnet0 
