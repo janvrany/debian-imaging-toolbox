@@ -194,9 +194,11 @@ function mount_ROOT() {
 
 function umount_ROOT() {
     if [ -d "${ROOT}/proc/self" ]; then
+        sleep 1
         sudo umount "${ROOT}/proc"
     fi
     if findmnt -n "${ROOT}/etc/resolv.conf"; then
+        sleep 1
         sudo umount "${ROOT}/etc/resolv.conf"
     fi
     if grep "${ROOT}" /etc/mtab > /dev/null; then

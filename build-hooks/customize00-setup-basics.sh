@@ -63,6 +63,7 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
 #
 # Sigh!
 if findmnt "${ROOT}"; then
+    sleep 1
     chroot "${ROOT}" umount /proc
     chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
         systemd systemd-sysv libnss-resolve
