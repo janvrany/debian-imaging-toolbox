@@ -10,12 +10,31 @@ config "$(dirname $0)/config-local.sh"
 # Config variables
 #
 : ${CONFIG_RUN_SHELL_BIND_USER:=no}
+: ${CONFIG_RUN_SHELL_BIND_HOME:=no}
+
+#
+#
+#
+systemd_nspawn_opts=()
+
+
+usage() { echo "Usage: $0 [-u USER] IMAGE [COMMAND]" 1>&2; exit 1; }
+
+while getopts ":u:r:d:p:" o; do
+    case "${o}" in
+        u)
+            systemd_nspawn_opts+=("-u" "${OPTARG}")
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
 
 #
 # Mount and umount the root
 #
 if [ -z "$1" ]; then
-    echo "usage: $(basename $0) <ROOT>"
+    usage
     exit 1
 else
     ROOT_IMAGE=$1
@@ -23,27 +42,28 @@ else
 fi
 
 if [ "$CONFIG_RUN_SHELL_BIND_USER" == "yes" ]; then
-    bind_user=--bind-user=$USER
+    systemd_nspawn_opts+=("--bind-user=$USER")
 elif [ "$CONFIG_RUN_SHELL_BIND_USER" == "no" ]; then
     true
 elif [ -z "$CONFIG_RUN_SHELL_BIND_USER" ]; then
     true
 else
-    bind_user=--bind-user=$CONFIG_RUN_SHELL_BIND_USER
+    systemd_nspawn_opts+=("--bind-user=$CONFIG_RUN_SHELL_BIND_USER")
 fi
 
+
 if [ -d "$ROOT_IMAGE" ]; then
-    image=--directory=$ROOT_IMAGE
+    systemd_nspawn_opts+=("--directory=$ROOT_IMAGE")
 else
-    image=--image=$ROOT_IMAGE
+    systemd_nspawn_opts+=("--image=$ROOT_IMAGE")
 fi
+
+systemd_nspawn_opts+=("--hostname" "$(cat "$ROOT/etc/hostname")")
+systemd_nspawn_opts+=("--bind-ro" "/etc/resolv.conf:/etc/resolv.conf")
 
 if [ -z "$1" ]; then
     # Run interactive shell
-    sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
-                        $image \
-                        --bind-ro /etc/resolv.conf:/etc/resolv.conf \
-                        $bind_user
+    sudo systemd-nspawn "${systemd_nspawn_opts[@]}"
 else
     # Run command inside the container
     sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
