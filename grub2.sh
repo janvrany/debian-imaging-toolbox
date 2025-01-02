@@ -42,6 +42,8 @@ fi
 
 sudo chroot "${ROOT}" apt-get --allow-unauthenticated -y install \
 						"$kernel_pkg" grub-pc
+sudo chroot "${ROOT}" apt-get clean
+
 echo "
 // See https://stackoverflow.com/questions/61327011/correct-way-to-exit-init-in-linux-user-mode
 #include <unistd.h>
@@ -84,6 +86,21 @@ echo '
 #
 GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX net.ifnames=0"
 ' | sudo tee "$ROOT/etc/default/grub.d/ifnames.cfg"
+
+echo '
+#
+# Set timeout to 1. This saves us 4 secs when booting, especially
+# handy when used as start-on-demand CI build node.
+#
+GRUB_TIMEOUT=1
+' | sudo tee "$ROOT/etc/default/grub.d/timeout.cfg"
+
+echo '
+#
+# Disable os prober. There are no other systems.
+#
+GRUB_DISABLE_OS_PROBER=true
+' | sudo tee "$ROOT/etc/default/grub.d/os-prober.cfg"
 
 echo '
 #
