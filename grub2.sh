@@ -85,6 +85,15 @@ echo '
 GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX net.ifnames=0"
 ' | sudo tee "$ROOT/etc/default/grub.d/ifnames.cfg"
 
+echo '
+#
+# Only include required modules in initramfs. This significantly
+# reduces the size of initramfs and speeds up boot. This is especially
+# handy when used as start-on-demand CI build node.
+#
+MODULES=dep
+' | sudo tee "$ROOT/etc/initramfs-tools/conf.d/modules"
+
 if [ ! -z "$CONFIG_GRUB_CMDLINE_LINUX_CUSTOM" ]; then
 echo "
 #
@@ -97,6 +106,7 @@ fi
 echo "#!/bin/bash
 set -x
 update-grub2
+update-initramfs -c -k all
 grub-install /dev/vda
 /tmp/off
 " | sudo tee "$ROOT/tmp/grub-self-install.sh"
