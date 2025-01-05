@@ -46,7 +46,8 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     apt-utils openssh-client \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
-    lsb-release dbus man
+    lsb-release dbus man \
+    qemu-guest-agent
     # libgnutls30 \
 
 #
