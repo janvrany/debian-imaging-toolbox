@@ -152,7 +152,7 @@ chroot "$ROOT" apt update
 chroot "$ROOT" apt upgrade --allow-unauthenticated -y
 
 #
-# Configure eth0
+# Configure network
 #
 if [ -d "$ROOT/etc/network/interfaces.d" ]; then
     # Use "old" Debian-style config
@@ -169,6 +169,21 @@ Name=$CONFIG_DEFAULT_NET_IFACE
 
 [Network]
 DHCP=yes
+
+[DHCPv4]
+#
+# Use MAC address to construct DHCP client ID (rather than IAID+DUID used
+# by systemd-networkd by default).
+#
+# This makes the DHCP server configuration for static leases much simpler,
+# since:
+#
+#   i) it's easier to configure (in Mikrotik at least) since client ID does
+#      not change whenever you re-image the VM
+#  iI) and compatible with what kernel IP DHCP autoconfiguration uses (such as
+#      when mounting root over NFS)
+#
+ClientIdentifier=mac
 " | sudo tee "$ROOT/etc/systemd/network/99-$CONFIG_DEFAULT_NET_IFACE.network"
     chroot "$ROOT" systemctl enable systemd-networkd.service
 fi
