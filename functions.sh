@@ -9,6 +9,11 @@ function error () {
     exit 1
 }
 
+function warn () {
+    echo "WARNING: $1"
+    exit 1
+}
+
 #
 # Load config from given file if it exists.
 #
@@ -171,8 +176,8 @@ function mount_ROOT() {
                         sudo mount "$ROOT_LO_PART" "$ROOT"
                     else
                         sync
-                        #sudo \
-                        guestmount -a "$1" -m $ROOT_PART:/:acl,user_xattr -o allow_other -o kernel_cache "${ROOT}"
+                        sudo \
+                        guestmount -a "$1" -m $ROOT_PART:/:acl,user_xattr -o allow_other -o kernel_cache -w "${ROOT}"
                     fi
                     ;;
                 /dev/sda)

@@ -9,8 +9,10 @@ config "$(dirname $0)/config-local.sh"
 #
 # Config variables
 #
-: ${CONFIG_RUN_SHELL_BIND_USER:=no}
-: ${CONFIG_RUN_SHELL_BIND_HOME:=no}
+: ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/tmp"}
+
+test -z "${CONFIG_RUN_SHELL_BIND_USER+x}" || warn "CONFIG_RUN_SHELL_BIND_USER is obsolete, IGNORING. Use -u USER option!"
+test -z "${CONFIG_RUN_SHELL_BIND_HOME+x}" || warn "CONFIG_RUN_SHELL_BIND_HOME is obsolete, IGNORING. Use -h option!"
 
 #
 #
@@ -18,12 +20,21 @@ config "$(dirname $0)/config-local.sh"
 systemd_nspawn_opts=()
 
 
-usage() { echo "Usage: $0 [-u USER] IMAGE [COMMAND]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-u USER|-h] [-x] [-t] IMAGE [COMMAND]" 1>&2; exit 1; }
 
-while getopts ":u:r:d:p:" o; do
+while getopts ":u:hxt" o; do
     case "${o}" in
         u)
             systemd_nspawn_opts+=("-u" "${OPTARG}")
+            ;;
+        h)
+            systemd_nspawn_opts+=("--bind=${HOME}")
+            ;;
+        x)
+            systemd_nspawn_opts+=("-x")
+            ;;
+        t)
+            systemd_nspawn_opts+=("--bind" "$(realpath $CONFIG_BUILD_TMP_DIR):/tmp")
             ;;
     esac
 done
@@ -41,17 +52,6 @@ else
     shift
 fi
 
-if [ "$CONFIG_RUN_SHELL_BIND_USER" == "yes" ]; then
-    systemd_nspawn_opts+=("--bind-user=$USER")
-elif [ "$CONFIG_RUN_SHELL_BIND_USER" == "no" ]; then
-    true
-elif [ -z "$CONFIG_RUN_SHELL_BIND_USER" ]; then
-    true
-else
-    systemd_nspawn_opts+=("--bind-user=$CONFIG_RUN_SHELL_BIND_USER")
-fi
-
-
 if [ -d "$ROOT_IMAGE" ]; then
     systemd_nspawn_opts+=("--directory=$ROOT_IMAGE")
 else
@@ -67,8 +67,6 @@ if [ -z "$1" ]; then
 else
     # Run command inside the container
     sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
-                        $image \
-                        $bind_user \
-                        --bind-ro /etc/resolv.conf:/etc/resolv.conf \
+                        "${systemd_nspawn_opts[@]}" \
                         -a "$@"
 fi

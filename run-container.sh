@@ -9,8 +9,32 @@ config "$(dirname $0)/config-local.sh"
 #
 # Config variables
 #
-: ${CONFIG_RUN_IN_CONTAINER_BIND_USER:=no}
-: ${CONFIG_RUN_IN_CONTAINER_BIND_HOME:=no}
+# None
+
+test -z "${CONFIG_RUN_IN_CONTAINER_BIND_USER+x}" || warn "CONFIG_RUN_IN_CONTAINER_BIND_USER is obsolete, IGNORING. Use -u USER option!"
+test -z "${CONFIG_RUN_IN_CONTAINER_BIND_HOME+x}" || warn "CONFIG_RUN_IN_CONTAINER_BIND_HOME is obsolete, IGNORING. Use -h option!"
+
+#
+# Command line options
+#
+systemd_nspawn_opts=()
+
+usage() { echo "Usage: $0 [-u USER|-h] [-x] IMAGE [COMMAND]" 1>&2; exit 1; }
+
+while getopts ":u:hx" o; do
+    case "${o}" in
+        u)
+            systemd_nspawn_opts+=("--bind-user=${OPTARG}")
+            ;;
+        h)
+            systemd_nspawn_opts+=("--bind=${HOME}")
+            ;;
+        x)
+            systemd_nspawn_opts+=("-x")
+            ;;
+    esac
+done
+shift $((OPTIND-1))
 
 #
 # Boot the system
@@ -18,27 +42,6 @@ config "$(dirname $0)/config-local.sh"
 if [ -z "$1" ]; then
     echo "usage: $(basename $0) [-u USER] <ROOT>"
     exit 1
-fi
-
-if [ "$CONFIG_RUN_IN_CONTAINER_BIND_HOME" == "yes" ]; then
-    bind_home=--bind=$HOME
-elif [ "$CONFIG_RUN_IN_CONTAINER_BIND_HOME" == "no" ]; then
-    true
-elif [ -z "$CONFIG_RUN_IN_CONTAINER_BIND_HOME" ]; then
-    true
-else
-    echo "Invalid value of CONFIG_RUN_IN_CONTAINER_BIND_HOME: $CONFIG_RUN_IN_CONTAINER_BIND_HOME (must be 'yes' or 'no')"
-fi
-
-if [ "$CONFIG_RUN_IN_CONTAINER_BIND_USER" == "yes" ]; then
-    bind_user=--bind-user=$USER
-    bind_home=
-elif [ "$CONFIG_RUN_IN_CONTAINER_BIND_USER" == "no" ]; then
-    true
-elif [ -z "$CONFIG_RUN_IN_CONTAINER_BIND_USER" ]; then
-    true
-else
-    bind_user=--bind-user=$CONFIG_RUN_IN_CONTAINER_BIND_USER
 fi
 
 if [ -d "$1" ]; then
@@ -49,7 +52,7 @@ fi
 
 sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
                     --boot $image \
-                    $bind_user $bind_home
+                    $systemd_nspawn_opts
 
 
 
