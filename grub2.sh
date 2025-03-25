@@ -10,6 +10,8 @@ config "$(dirname $0)/config-local.sh"
 # Config variables
 #
 : ${CONFIG_GRUB_CMDLINE_LINUX_CUSTOM:=}
+: ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/../tmp"}
+
 
 #
 # Install Linux kernel and GRUB2
@@ -22,7 +24,7 @@ elif [ -d "$1" ]; then
 	exit 2
 fi
 
-tmp=$(realpath $(dirname $0))/tmp
+tmp="$CONFIG_BUILD_TMP_DIR"
 mkdir -p $tmp
 
 ensure_ROOT "$1"

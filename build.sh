@@ -98,6 +98,12 @@ if [ -z "$CONFIG_DEBIAN_SOURCES" ]; then
     CONFIG_DEBIAN_SOURCES="deb http://deb.debian.org/debian $CONFIG_DEBIAN_RELEASE main contrib"
 fi
 
+#
+# Make CONFIG_BUILD_TMP_DIR visisible to hooks
+#
+mkdir -p "$CONFIG_BUILD_TMP_DIR"
+export CONFIG_BUILD_TMP_DIR
+
 # Bootstrap!
 sudo \
 mmdebstrap \
