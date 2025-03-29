@@ -43,7 +43,7 @@ fi
 
 
 sudo chroot "${ROOT}" apt-get --allow-unauthenticated -y install \
-						"$kernel_pkg" grub-pc
+						"$kernel_pkg" initramfs-tools grub-pc
 sudo chroot "${ROOT}" apt-get clean
 
 echo "
