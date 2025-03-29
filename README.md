@@ -92,12 +92,9 @@ for Debian. To boostrap Ubuntu image, use following configuration (in `config.sh
 
 ## Bootstrapping Ubuntu 22.04 (Jammy Jellyfish) and newer
 
-Bootstraping recent Ubuntu (that is, newer than 20.04) requires additional trick
-since Debian's `dpkg` does not suport zstd compression (and will not anytime soon).
-
-To workaround this limitation, the trick is to start building with older version (20.04 Focal Fossa) and then upgrade to Jammy as soon as possible. This is done automagically
-if `CONFIG_DEBIAN_RELEASE` is set to Jammy (or newer, though this has not been tested yet).
-
+Since Ubuntu 22.04 uses zstd in `.deb` packages, the host system
+(the one on which the image is build) needs `dpkg` > 1.21.18
+(Debian 12 Bookworm or newer).
 
 ## Useful links
 

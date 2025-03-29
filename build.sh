@@ -66,12 +66,18 @@ case "$CONFIG_DEBIAN_RELEASE" in
         else
             ubuntu_keyring_arg="--keyring=$ubuntu_keyring"
         fi
-        ubuntu_upgrade_hook="sed -i -e s/focal/$CONFIG_DEBIAN_RELEASE/g \$1/etc/apt/sources.list; \
-                             chroot \$1 /usr/bin/apt-get update;
-                             chroot \$1 /usr/bin/apt-get -y upgrade; \
-                             chroot \$1 /usr/bin/apt-get -y autoremove \
-                            "
-        CONFIG_DEBIAN_RELEASE=focal
+
+        # zsdt support has been added to dpkg 1.21.18 (Debian 12 Bookworm)
+        # so e no longer need to start with focal and then upgrade.
+        #
+        # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=892664
+        #
+        #ubuntu_upgrade_hook="sed -i -e s/focal/$CONFIG_DEBIAN_RELEASE/g \$1/etc/apt/sources.list; \
+        #                     chroot \$1 /usr/bin/apt-get update;
+        #                     chroot \$1 /usr/bin/apt-get -y upgrade; \
+        #                     chroot \$1 /usr/bin/apt-get -y autoremove \
+        #                    "
+        #CONFIG_DEBIAN_RELEASE=focal
         if [ -z "$CONFIG_DEBIAN_SOURCES" ]; then
             CONFIG_DEBIAN_SOURCES="deb http://archive.ubuntu.com/ubuntu $CONFIG_DEBIAN_RELEASE main universe"
         fi
