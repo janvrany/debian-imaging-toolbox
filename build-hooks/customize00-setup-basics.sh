@@ -14,7 +14,9 @@ ensure_ROOT $1
 #
 # Config variables
 #
-: ${CONFIG_HOSTNAME:=debian}
+: ${CONFIG_DEBIAN_ARCH:=amd64}
+: ${CONFIG_DEBIAN_RELEASE:=bookworm}
+: ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 : ${CONFIG_DEFAULT_NET_IFACE:=eth0}
 : ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}
 

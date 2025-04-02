@@ -10,6 +10,9 @@ config "$(dirname $0)/config-local.sh"
 # Config variables
 #
 # None
+: ${CONFIG_DEBIAN_ARCH:=amd64}
+: ${CONFIG_DEBIAN_RELEASE:=bookworm}
+: ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 
 test -z "${CONFIG_RUN_IN_CONTAINER_BIND_USER+x}" || warn "CONFIG_RUN_IN_CONTAINER_BIND_USER is obsolete, IGNORING. Use -u USER option!"
 test -z "${CONFIG_RUN_IN_CONTAINER_BIND_HOME+x}" || warn "CONFIG_RUN_IN_CONTAINER_BIND_HOME is obsolete, IGNORING. Use -h option!"
@@ -50,7 +53,7 @@ else
     image=--image=$1
 fi
 
-sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
+sudo systemd-nspawn --hostname "$CONFIG_HOSTNAME" \
                     --boot $image \
                     $systemd_nspawn_opts
 

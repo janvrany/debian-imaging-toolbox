@@ -9,6 +9,9 @@ config "$(dirname $0)/config-local.sh"
 #
 # Config variables
 #
+: ${CONFIG_DEBIAN_ARCH:=amd64}
+: ${CONFIG_DEBIAN_RELEASE:=bookworm}
+: ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 : ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/tmp"}
 
 test -z "${CONFIG_RUN_SHELL_BIND_USER+x}" || warn "CONFIG_RUN_SHELL_BIND_USER is obsolete, IGNORING. Use -u USER option!"
@@ -58,7 +61,7 @@ else
     systemd_nspawn_opts+=("--image=$ROOT_IMAGE")
 fi
 
-systemd_nspawn_opts+=("--hostname" "$(cat "$ROOT/etc/hostname")")
+systemd_nspawn_opts+=("--hostname" "$CONFIG_HOSTNAME")
 systemd_nspawn_opts+=("--bind-ro" "/etc/resolv.conf:/etc/resolv.conf")
 
 if [ -z "$1" ]; then
@@ -66,7 +69,6 @@ if [ -z "$1" ]; then
     sudo systemd-nspawn "${systemd_nspawn_opts[@]}"
 else
     # Run command inside the container
-    sudo systemd-nspawn --hostname $(cat "$ROOT/etc/hostname") \
-                        "${systemd_nspawn_opts[@]}" \
+    sudo systemd-nspawn "${systemd_nspawn_opts[@]}" \
                         -a "$@"
 fi
