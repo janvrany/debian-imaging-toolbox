@@ -10,7 +10,7 @@ config "$(dirname $0)/config-local.sh"
 # Config variables
 #
 : ${CONFIG_DEBIAN_ARCH:=amd64}
-: ${CONFIG_DEBIAN_RELEASE:=bullseye}
+: ${CONFIG_DEBIAN_RELEASE:=bookworm}
 : ${CONFIG_DEBIAN_SOURCES:=}
 : ${CONFIG_MACHINE_ID:=}
 : ${CONFIG_BUILD_TMP_DIR:="$(dirname $0)/tmp"}
