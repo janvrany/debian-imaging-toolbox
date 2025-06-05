@@ -43,8 +43,7 @@ shift $((OPTIND-1))
 # Boot the system
 #
 if [ -z "$1" ]; then
-    echo "usage: $(basename $0) [-u USER] <ROOT>"
-    exit 1
+    usage
 fi
 
 if [ -d "$1" ]; then
@@ -55,7 +54,7 @@ fi
 
 sudo systemd-nspawn --hostname "$CONFIG_HOSTNAME" \
                     --boot $image \
-                    $systemd_nspawn_opts
+                    "${systemd_nspawn_opts[@]}"
 
 
 
