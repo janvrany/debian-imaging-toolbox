@@ -2,3 +2,6 @@ root
 root*
 config.sh
 config-local.sh
+helpers/amd64
+helpers/arm64
+helpers/riscv64

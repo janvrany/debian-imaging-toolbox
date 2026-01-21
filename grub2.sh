@@ -89,17 +89,11 @@ if [ "$optimize_for_kvm_vm" == "yes" ]; then
 fi
 sudo chroot "${ROOT}" apt-get clean
 
-echo "
-// See https://stackoverflow.com/questions/61327011/correct-way-to-exit-init-in-linux-user-mode
-#include <unistd.h>
-#include <sys/reboot.h>
-int main(int argc, char *argv[]) {
-  sync();
-  reboot(RB_POWER_OFF);
-}
-" > "$ROOT/tmp/off.c"
-gcc -static -o "$ROOT/tmp/off" "$ROOT/tmp/off.c"
-
+#
+# Install helper binary to power off the VM
+#
+helpers_dir=$(dirname $(realpath ${BASH_SOURCE[0]}))/helpers
+make -C "$helpers_dir" O="$ROOT/tmp"
 
 echo '
 #
