@@ -19,6 +19,8 @@ ensure_ROOT $1
 : ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 : ${CONFIG_DEFAULT_NET_IFACE:=eth0}
 : ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}
+: ${CONFIG_JOURNALD_SystemMaxUse=128M}
+: ${CONFIG_JOURNALD_SystemKeepFree=128M}
 
 #
 #
@@ -203,3 +205,11 @@ fi
 # allow-hotplug host0
 # iface host0 inet dhcp
 # " | sudo tee "$ROOT/etc/network/interfaces.d/host0"
+
+# Configure journald
+sudo mkdir -p "$ROOT/etc/systemd/journald.conf.d"
+echo "
+[Journal]
+SystemMaxUse=${CONFIG_JOURNALD_SystemMaxUse}
+SystemKeepFree=${CONFIG_JOURNALD_SystemKeepFree}
+" | sudo tee "$ROOT/etc/systemd/journald.conf.d/limits.conf"
