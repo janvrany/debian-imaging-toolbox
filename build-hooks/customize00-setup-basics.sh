@@ -17,7 +17,7 @@ ensure_ROOT $1
 : ${CONFIG_DEBIAN_ARCH:=amd64}
 : ${CONFIG_DEBIAN_RELEASE:=bookworm}
 : ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
-: ${CONFIG_DEFAULT_NET_IFACE:=eth0}
+: ${CONFIG_DEFAULT_NET_IFACE:=}
 : ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}
 : ${CONFIG_JOURNALD_SystemMaxUse=128M}
 : ${CONFIG_JOURNALD_SystemKeepFree=128M}
@@ -164,14 +164,60 @@ chroot "$ROOT" apt upgrade --allow-unauthenticated -y
 #
 if [ -d "$ROOT/etc/network/interfaces.d" ]; then
     # Use "old" Debian-style config
-echo "
+    if [ ! -z "$CONFIG_DEFAULT_NET_IFACE" ]; then
+        echo "
 # auto $CONFIG_DEFAULT_NET_IFACE
 allow-hotplug $CONFIG_DEFAULT_NET_IFACE
 iface $CONFIG_DEFAULT_NET_IFACE inet dhcp
-" | sudo tee "$ROOT/etc/network/interfaces.d/$CONFIG_DEFAULT_NET_IFACE"
+"       | sudo tee "$ROOT/etc/network/interfaces.d/$CONFIG_DEFAULT_NET_IFACE"
+    else
+        warn "CONFIG_DEFAULT_NET_IFACE not defined, network NOT CONFIGURED!"
+    fi
 elif [ -d "$ROOT/etc/systemd/network" ]; then
     # Use "modern" systemd-networkd config
-echo "
+    #
+    # First, configure "default" network that should work in most cases
+    #
+    echo "[Match]
+# Ethernet network interface names are assigned as follows:
+#
+#  * eno: Names containing the index numbers (PCI on-board index) provided by firmware/BIOS for on-board devices, example: eno1 (eno = Onboard).
+#  * end: Names containing the index numbers (DeviceTree alias index) provided by firmware/BIOS for on-board devices, example: end0 (end = DeviceTree), e.g. for embedded systems.
+#  * ens: Names containing the PCI Express hotplug slot numbers provided by the firmware/BIOS, example: ens1 (ens = Slot).
+#  * enp: Names containing the physical/geographical location of the hardware's port, example: enp2s0 (enp = Position).
+#  * enx: Names containing the MAC address of the interface (example: enx78e7d1ea46da).
+#  * eth: Classic unpredictable kernel-native ethX naming (example: eth0).
+#
+# Network interface name host0 is used by systemd-nspawn when using
+# --network-veth.
+
+Name=eth0 eno0 end0 ens0 host0
+
+[Network]
+DHCP=yes
+
+[DHCPv4]
+#
+# Use MAC address to construct DHCP client ID (rather than IAID+DUID used
+# by systemd-networkd by default).
+#
+# This makes the DHCP server configuration for static leases much simpler,
+# since:
+#
+#   i) it's easier to configure (in Mikrotik at least) since client ID does
+#      not change whenever you re-image the VM
+#  iI) and compatible with what kernel IP DHCP autoconfiguration uses (such as
+#      when mounting root over NFS)
+#
+ClientIdentifier=mac
+"   | sudo tee "$ROOT/etc/systemd/network/99-default.network"
+
+    #
+    # Then, if CONFIG_DEFAULT_NET_IFACE is specified, configure that one
+    # explicitly.
+    #
+    if [ ! -z "$CONFIG_DEFAULT_NET_IFACE" ]; then
+        echo "
 [Match]
 Name=$CONFIG_DEFAULT_NET_IFACE
 
@@ -192,23 +238,15 @@ DHCP=yes
 #      when mounting root over NFS)
 #
 ClientIdentifier=mac
-" | sudo tee "$ROOT/etc/systemd/network/99-$CONFIG_DEFAULT_NET_IFACE.network"
+"       | sudo tee "$ROOT/etc/systemd/network/98-$CONFIG_DEFAULT_NET_IFACE.network"
+    fi
+
+    #
+    # Finally, enable networkd
+    #
     chroot "$ROOT" systemctl enable systemd-networkd.service
 fi
 
-# #
-# # Configure host0
-# #
-# echo "
-# #
-# # Interface host0 is used by systemd-nspawn when using
-# # --network-veth. It is configured here to make make network
-# # automagically work when running in container created by
-# # systemd-nspawn.
-# #
-# allow-hotplug host0
-# iface host0 inet dhcp
-# " | sudo tee "$ROOT/etc/network/interfaces.d/host0"
 
 # Configure journald
 sudo mkdir -p "$ROOT/etc/systemd/journald.conf.d"
