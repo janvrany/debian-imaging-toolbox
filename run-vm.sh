@@ -42,7 +42,10 @@ typeset qemu_img_fmt=$(qemu-img info $1 | grep 'file format' | cut -d ' '  -f 3)
 
 case "$arch" in
 	x86_64 )
-		qemu_opts="-M q35 -accel kvm -nographic"
+		qemu_opts="-M q35 -accel kvm"
+		;;
+	riscv64)
+		qemu_opts="-nographic"
 		;;
 	* )
 		error "Architecture not yet supported: $arch"
