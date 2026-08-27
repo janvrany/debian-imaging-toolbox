@@ -112,7 +112,7 @@ function ensure_ROOT() {
         ROOT=$(realpath "$1")
         mount_ROOT "$1"
         return 0
-    elif [ \( \( -f "$1" \) -a \( -w "$1" \) \) -o \( -b "$1" \) ]; then
+    elif test -f "$1" -a -w "$1" || test -b "$1"; then
         ROOT=$(realpath $(mktemp -d))
         mount_ROOT "$1"
         return 0
