@@ -110,11 +110,11 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
 #
 # Configure machine ID. Note, that for some reason, contents of this
 # file does not survive mmdebstrap, so if CONFIG_MACHINE_ID set, we
-# initialize $ROOT/etc/machine-id in `build.sh`.
+# initialize $ROOT/etc/machine-id in `build.sh` again.
 #
 # See https://wiki.debian.org/MachineId
 #
-touch    "$ROOT/etc/machine-id"
+echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/etc/machine-id"
 
 #
 # Configure hostname and /etc/hosts

@@ -135,6 +135,6 @@ mmdebstrap \
 # CONFIG_MACHINE_ID set, we initialize it here. Sigh.
 if [ ! -z "$CONFIG_MACHINE_ID" ]; then
     echo "$CONFIG_MACHINE_ID" | sudo tee "$ROOT/etc/machine-id"
-    rm -f    "$ROOT/var/lib/dbus/machine-id"
-    ln -r -s "$ROOT/etc/machine-id" "$ROOT/var/lib/dbus/machine-id"
+    sudo rm -f    "$ROOT/var/lib/dbus/machine-id"
+    sudo ln -r -s "$ROOT/etc/machine-id" "$ROOT/var/lib/dbus/machine-id"
 fi
