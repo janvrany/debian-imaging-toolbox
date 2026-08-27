@@ -15,7 +15,7 @@ ensure_ROOT $1
 # Config variables
 #
 : ${CONFIG_DEBIAN_ARCH:=amd64}
-: ${CONFIG_DEBIAN_RELEASE:=bookworm}
+: ${CONFIG_DEBIAN_RELEASE:=trixie}
 : ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 : ${CONFIG_DEFAULT_NET_IFACE:=}
 : ${CONFIG_TIMEZONE:=$(cat /etc/timezone)}

@@ -11,7 +11,7 @@ config "$(dirname $0)/config-local.sh"
 #
 # None
 : ${CONFIG_DEBIAN_ARCH:=amd64}
-: ${CONFIG_DEBIAN_RELEASE:=bookworm}
+: ${CONFIG_DEBIAN_RELEASE:=trixie}
 : ${CONFIG_HOSTNAME:="${CONFIG_DEBIAN_RELEASE}-${CONFIG_DEBIAN_ARCH}"}
 
 test -z "${CONFIG_RUN_IN_CONTAINER_BIND_USER+x}" || warn "CONFIG_RUN_IN_CONTAINER_BIND_USER is obsolete, IGNORING. Use -u USER option!"
