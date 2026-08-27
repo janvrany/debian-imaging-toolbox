@@ -51,8 +51,12 @@ chroot "${ROOT}" /usr/bin/apt-get --allow-unauthenticated -y install \
     sudo bash-completion tmux adduser acl ethtool \
     procps udev locales zip unzip \
     lsb-release dbus man \
-    qemu-guest-agent
+    qemu-guest-agent \
+    polkitd kmod
     # libgnutls30 \
+
+# polkitd kmod is requred for systemd
+
 
 #
 # Install systemd
